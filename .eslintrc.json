@@ -1,0 +1,11 @@
+{
+  "extends": ["prettier"],
+  "plugins": ["prettier", "import"],
+  "rules": {
+    "quotes": [1, "single"],
+    "padding-line-between-statements": [
+      1,
+      { "blankLine": "always", "prev": "*", "next": "return" }
+    ]
+  }
+}
