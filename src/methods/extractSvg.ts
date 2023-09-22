@@ -1,31 +1,42 @@
 import inquirer, { QuestionCollection } from 'inquirer';
+import {
+  FigmaFetchOptions,
+  FigmaFetchService,
+} from '../services/FigmaFetchService.js';
+import { ComponentFactory } from '../factories/componentFactory.js';
 
 const questions: QuestionCollection = [
   {
     type: 'input',
-    name: 'first_name',
-    message: "What's your first name",
-  },
-  {
-    type: 'list',
-    name: 'theme',
-    message: 'What do you want to do?',
-    choices: [
-      'Order a pizza',
-      'Make a reservation',
-      new inquirer.Separator(),
-      'Ask for opening hours',
-      {
-        name: 'Contact support',
-        disabled: 'Unavailable at this time',
-      },
-      'Talk to the receptionist',
-    ],
+    name: 'token',
+    message: 'Enter Figma access token',
   },
 ];
 
-export const extractSvg = async () => {
-  const answers = await inquirer.prompt(questions);
+export const extractSvg = async ({
+  outDir,
+  ...options
+}: Omit<FigmaFetchOptions, 'token'> & { outDir: string }) => {
+  const { token } = await inquirer.prompt(questions);
 
-  console.log(JSON.stringify(answers, null, 2));
+  if (!token) {
+    return;
+  }
+
+  const instance = FigmaFetchService.create({
+    token,
+    ...options,
+    // iconSliceName: 'icons',
+    // pageName: 'components',
+    // projectKey: 'HgpwQLKWfOf5JZWNZxb3wy',
+  });
+  const svgs = await instance.extractSvgs();
+
+  const components = svgs.map(ComponentFactory.createIcon);
+  const index = ComponentFactory.createIndexFile(components);
+
+  console.log(components);
+  console.log(index);
 };
+
+// figd_SYmZG4ivsTALjvkKoNWS66k8Rg9xcyD_l2cLxZH9
