@@ -15,7 +15,7 @@
     "lint": "eslint",
     "clean": "rm -rf ./lib",
     "build": "tsc",
-    "dev": "npm run build && node ./bin/index.js react-icons --key HgpwQLKWfOf5JZWNZxb3wy --page components --slice icons --out /test/icons/",
+    "dev": "npm run build && node ./bin/index.js react-icons --key HgpwQLKWfOf5JZWNZxb3wy --page components --slice icons --out ./test/icons",
     "prepack": "npm run build"
   },
   "keywords": [],

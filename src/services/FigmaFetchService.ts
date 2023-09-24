@@ -5,7 +5,7 @@ import { sortByProperty } from '../utils/sortByProperty.js';
 
 export type FigmaFetchOptions = {
   token: string;
-  iconSliceName: string;
+  iconSectionName: string;
   pageName: string;
   projectKey: string;
 };
@@ -83,16 +83,16 @@ export class FigmaFetchService {
     return [];
   };
 
-  private _findIconSlices = (node: FigmaNode): FigmaNode[] => {
+  private _findIconSections = (node: FigmaNode): FigmaNode[] => {
     if (
-      node.name.toLowerCase() === this.__figmaFetchOptions.iconSliceName &&
+      node.name.toLowerCase() === this.__figmaFetchOptions.iconSectionName &&
       node.type === 'SECTION'
     ) {
       return [node];
     }
 
     if ('children' in node) {
-      return node.children.map(this._findIconSlices).reduce(flattenArray, []);
+      return node.children.map(this._findIconSections).reduce(flattenArray, []);
     }
 
     return [];
@@ -151,7 +151,7 @@ export class FigmaFetchService {
     const { document } = await this._fetchFigmaFile();
 
     const components = this._findPageCanvas(document)
-      .flatMap(this._findIconSlices)
+      .flatMap(this._findIconSections)
       .flatMap(this._findComponents);
 
     const svgs = await this._getSvgsFromComponents(components);

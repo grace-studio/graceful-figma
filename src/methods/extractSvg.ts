@@ -1,19 +1,12 @@
 import 'dotenv/config';
-import inquirer, { DistinctQuestion, QuestionCollection } from 'inquirer';
+import inquirer, { DistinctQuestion } from 'inquirer';
 import {
   FigmaFetchOptions,
   FigmaFetchService,
 } from '../services/FigmaFetchService.js';
 import { ComponentFactory } from '../factories/componentFactory.js';
 import { FileUtil } from '../utils/FileUtil.js';
-
-// let questions: QuestionCollection = [
-//   {
-//     type: 'input',
-//     name: 'token',
-//     message: 'Enter Figma access token',
-//   },
-// ];
+import chalk from 'chalk';
 
 export const extractSvg = async ({
   outDir,
@@ -57,8 +50,14 @@ export const extractSvg = async ({
   const components = svgs.map(ComponentFactory.createIcon);
   const index = ComponentFactory.createIndexFile(components);
 
-  await FileUtil.clearPath(outDir);
+  FileUtil.clearPath(outDir);
+  FileUtil.writeFile(outDir, 'index.tsx', index);
+  components.forEach(({ name, component }) =>
+    FileUtil.writeFile(`${outDir}/icons`, `${name}.tsx`, component),
+  );
 
-  console.log(components);
-  console.log(index);
+  const iconNames = components.map(({ name }) => ` - ${name}`).join('\n');
+  console.log(chalk.green('\nSuccess!'));
+  console.log(chalk.yellow('\nExtracted the following icons:'));
+  console.log(chalk.yellow(iconNames));
 };

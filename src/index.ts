@@ -14,8 +14,8 @@ import { extractSvg } from './methods/extractSvg.js';
     .option('-o, --out <string>', 'output dir')
     .option('-k, --key <string>', 'project key')
     .option('-p, --page <string>', 'page name')
-    .option('-s, --slice <string>', 'icon slice name')
-    .action(({ out, key, page, slice }) => {
+    .option('-s, --section <string>', 'icon section name')
+    .action(({ out, key, page, section }) => {
       if (!out) {
         return console.error('missing output dir');
       }
@@ -25,13 +25,13 @@ import { extractSvg } from './methods/extractSvg.js';
       if (!page) {
         return console.error('missing page name');
       }
-      if (!slice) {
-        return console.error('missing slice name');
+      if (!section) {
+        return console.error('missing section name');
       }
 
       extractSvg({
         outDir: out,
-        iconSliceName: slice,
+        iconSectionName: section,
         pageName: page,
         projectKey: key,
       });

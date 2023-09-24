@@ -7,8 +7,7 @@ const createIcon = ({
   name,
 }: SvgComponent): Component => ({
   name,
-  component: `
-import { IconWrapper, IconProps } from '@grace-studio/graceful-next/components';
+  component: `import { IconWrapper, IconProps } from '@grace-studio/graceful-next/components';
 
 const ${name} = (props: IconProps) => (
   <IconWrapper {...props} ${width ? ` width={${width}}` : ''} ${
@@ -23,8 +22,9 @@ export default ${name};
 `,
 });
 
-const createIndexFile = (components: Component[]) => `
-import dynamic from 'next/dynamic';
+const createIndexFile = (
+  components: Component[],
+) => `import dynamic from 'next/dynamic';
 
 const Icons = {
 ${components
