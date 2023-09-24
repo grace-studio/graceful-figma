@@ -1,42 +1,64 @@
-import inquirer, { QuestionCollection } from 'inquirer';
+import 'dotenv/config';
+import inquirer, { DistinctQuestion, QuestionCollection } from 'inquirer';
 import {
   FigmaFetchOptions,
   FigmaFetchService,
 } from '../services/FigmaFetchService.js';
 import { ComponentFactory } from '../factories/componentFactory.js';
+import { FileUtil } from '../utils/FileUtil.js';
 
-const questions: QuestionCollection = [
-  {
-    type: 'input',
-    name: 'token',
-    message: 'Enter Figma access token',
-  },
-];
+// let questions: QuestionCollection = [
+//   {
+//     type: 'input',
+//     name: 'token',
+//     message: 'Enter Figma access token',
+//   },
+// ];
 
 export const extractSvg = async ({
   outDir,
   ...options
 }: Omit<FigmaFetchOptions, 'token'> & { outDir: string }) => {
-  const { token } = await inquirer.prompt(questions);
+  let token = process.env.FIGMA_ACCESS_TOKEN;
+  let questions: DistinctQuestion[] = [];
 
   if (!token) {
+    questions = [
+      {
+        type: 'input',
+        name: 'token',
+        message: 'Enter Figma access token',
+      },
+    ];
+  }
+
+  questions = [
+    ...questions,
+    {
+      type: 'confirm',
+      name: 'confirm',
+      message: `All content in ${outDir} will be deleted before writing new files. Proceed?`,
+    },
+  ];
+
+  const answers = await inquirer.prompt(questions);
+  token = token || answers.token;
+
+  if (!token || !answers.confirm) {
     return;
   }
 
-  const instance = FigmaFetchService.create({
+  const fetchService = FigmaFetchService.create({
     token,
     ...options,
-    // iconSliceName: 'icons',
-    // pageName: 'components',
-    // projectKey: 'HgpwQLKWfOf5JZWNZxb3wy',
   });
-  const svgs = await instance.extractSvgs();
 
+  const svgs = await fetchService.extractSvgs();
   const components = svgs.map(ComponentFactory.createIcon);
   const index = ComponentFactory.createIndexFile(components);
+
+  await FileUtil.clearPath(outDir);
 
   console.log(components);
   console.log(index);
 };
-
-// figd_SYmZG4ivsTALjvkKoNWS66k8Rg9xcyD_l2cLxZH9

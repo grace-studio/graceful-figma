@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { SvgComponent } from '../types/index.js';
 import { clearAndUpper, toPascalCase } from '../utils/index.js';
 import { sortByProperty } from '../utils/sortByProperty.js';
@@ -37,6 +38,18 @@ const extractSvgChildren = (svg: string): Omit<SvgComponent, 'name'> => {
 
 const flattenArray = <T>(acc: T[], curr: T[]) => [...acc, ...curr];
 
+const validateResponse = (data: any) => {
+  if (data.status && data.status !== 200) {
+    console.error(
+      chalk.red('Failed to fetch\n'),
+      JSON.stringify(data, null, 2),
+      '\n',
+    );
+    throw new Error();
+  }
+
+  return data;
+};
 export class FigmaFetchService {
   private __figmaFetchOptions: FigmaFetchOptions;
   private __figmaApiUrl: string = 'https://api.figma.com/v1';
@@ -101,7 +114,9 @@ export class FigmaFetchService {
     fetch(
       `${this.__figmaApiUrl}/files/${this.__figmaFetchOptions.projectKey}`,
       this.__fetchOptions,
-    ).then((response) => response.json());
+    )
+      .then((response) => response.json())
+      .then(validateResponse);
 
   private _fetchFigmaImages = (
     ids: string[],
@@ -111,7 +126,9 @@ export class FigmaFetchService {
         this.__figmaFetchOptions.projectKey
       }?ids=${ids.join()}&format=svg`,
       this.__fetchOptions,
-    ).then((response) => response.json());
+    )
+      .then((response) => response.json())
+      .then(validateResponse);
 
   private _getSvgsFromComponents = async (
     components: FigmaNode[],

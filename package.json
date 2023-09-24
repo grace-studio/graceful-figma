@@ -15,7 +15,7 @@
     "lint": "eslint",
     "clean": "rm -rf ./lib",
     "build": "tsc",
-    "dev": "npm run build && node ./bin/index.js extract-svgs --key HgpwQLKWfOf5JZWNZxb3wy --page components --slice icons /test/icons/",
+    "dev": "npm run build && node ./bin/index.js react-icons --key HgpwQLKWfOf5JZWNZxb3wy --page components --slice icons --out /test/icons/",
     "prepack": "npm run build"
   },
   "keywords": [],
@@ -24,6 +24,7 @@
   "dependencies": {
     "chalk": "^4",
     "commander": "11.0.0",
+    "dotenv": "16.3.1",
     "inquirer": "9.2.11"
   },
   "devDependencies": {

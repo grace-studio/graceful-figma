@@ -1,8 +1,6 @@
-export const sortByProperty = <T extends Object>(
-  property: keyof T,
-  sort_order: 'asc' | 'desc',
-) => {
-  const compareFn = (a: T, b: T) => {
+export const sortByProperty =
+  <T extends Object>(property: keyof T, sort_order: 'asc' | 'desc') =>
+  (a: T, b: T) => {
     const val1 = a[property];
     const val2 = b[property];
     const order = sort_order !== 'desc' ? 1 : -1;
@@ -23,5 +21,3 @@ export const sortByProperty = <T extends Object>(
         return 0;
     }
   };
-  return compareFn;
-};

@@ -10,14 +10,14 @@ import { extractSvg } from './methods/extractSvg.js';
   const program = new Command();
 
   program
-    .command('extract-svgs')
-    .argument('<outdir>')
+    .command('react-icons')
+    .option('-o, --out <string>', 'output dir')
     .option('-k, --key <string>', 'project key')
     .option('-p, --page <string>', 'page name')
     .option('-s, --slice <string>', 'icon slice name')
-    .action((outdir, { key, page, slice }) => {
-      if (!outdir) {
-        return console.error('missing outdir');
+    .action(({ out, key, page, slice }) => {
+      if (!out) {
+        return console.error('missing output dir');
       }
       if (!key) {
         return console.error('missing project key');
@@ -30,7 +30,7 @@ import { extractSvg } from './methods/extractSvg.js';
       }
 
       extractSvg({
-        outDir: outdir,
+        outDir: out,
         iconSliceName: slice,
         pageName: page,
         projectKey: key,
