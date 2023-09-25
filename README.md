@@ -11,6 +11,8 @@ It can also be installed locally in a project with `npm i -D @grace-studio/grace
 
 ## Usage
 
+The React icons outputted by the command is dependent on [@grace-studio/graceful-next](https://www.npmjs.com/package/@grace-studio/graceful-next) to work properly.
+
 With cli-parameters:
 
 ```bash
