@@ -1,14 +1,7 @@
 import chalk from 'chalk';
-import { SvgComponent } from '../types/index.js';
+import { FigmaFetchOptions, SvgComponent } from '../types/index.js';
 import { clearAndUpper, toPascalCase } from '../utils/index.js';
 import { sortByProperty } from '../utils/sortByProperty.js';
-
-export type FigmaFetchOptions = {
-  token: string;
-  iconSectionName: string;
-  pageName: string;
-  projectKey: string;
-};
 
 type FigmaNode = {
   id: string;
@@ -19,21 +12,6 @@ type FigmaNode = {
 
 type FigmaResponse = {
   document: FigmaNode;
-};
-
-const extractSvgChildren = (svg: string): Omit<SvgComponent, 'name'> => {
-  const svgStr = svg.replaceAll('\n', '');
-  const width = (svgStr.match(/(?<=width=")\d+(?=")/) || [])[0];
-  const height = (svgStr.match(/(?<=height=")\d+(?=")/) || [])[0];
-  const children = (svgStr.match(/(?<=<svg.*>).+(?=<\/svg>)/) || [''])[0];
-
-  return {
-    width: width ? Number(width) : undefined,
-    height: height ? Number(height) : undefined,
-    children: children
-      .replace(/-[a-z](?=.+=")/gm, clearAndUpper)
-      .replace(/fill="#[a-fA-F0-9]{6}"/gm, ''),
-  };
 };
 
 const flattenArray = <T>(acc: T[], curr: T[]) => [...acc, ...curr];
@@ -70,7 +48,7 @@ export class FigmaFetchService {
 
   private _findPageCanvas = (node: FigmaNode): FigmaNode[] => {
     if (
-      node.name.toLowerCase() === this.__figmaFetchOptions.pageName &&
+      node.name.toLowerCase() === this.__figmaFetchOptions.page &&
       node.type === 'CANVAS'
     ) {
       return [node];
@@ -85,7 +63,7 @@ export class FigmaFetchService {
 
   private _findIconSections = (node: FigmaNode): FigmaNode[] => {
     if (
-      node.name.toLowerCase() === this.__figmaFetchOptions.iconSectionName &&
+      node.name.toLowerCase() === this.__figmaFetchOptions.section &&
       node.type === 'SECTION'
     ) {
       return [node];
@@ -112,7 +90,7 @@ export class FigmaFetchService {
 
   private _fetchFigmaFile = (): Promise<FigmaResponse> =>
     fetch(
-      `${this.__figmaApiUrl}/files/${this.__figmaFetchOptions.projectKey}`,
+      `${this.__figmaApiUrl}/files/${this.__figmaFetchOptions.key}`,
       this.__fetchOptions,
     )
       .then((response) => response.json())
@@ -123,7 +101,7 @@ export class FigmaFetchService {
   ): Promise<{ images: Record<string, string> }> =>
     fetch(
       `${this.__figmaApiUrl}/images/${
-        this.__figmaFetchOptions.projectKey
+        this.__figmaFetchOptions.key
       }?ids=${ids.join()}&format=svg`,
       this.__fetchOptions,
     )
@@ -139,8 +117,7 @@ export class FigmaFetchService {
       components.map(({ id, name }) =>
         fetch(images[id])
           .then((response) => response.text())
-          .then(extractSvgChildren)
-          .then((data) => ({ ...data, name: toPascalCase(name) })),
+          .then((data) => ({ svg: data, name: toPascalCase(name) })),
       ),
     );
 

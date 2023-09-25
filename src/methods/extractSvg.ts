@@ -1,18 +1,18 @@
 import 'dotenv/config';
 import inquirer, { DistinctQuestion } from 'inquirer';
-import {
-  FigmaFetchOptions,
-  FigmaFetchService,
-} from '../services/FigmaFetchService.js';
+import { FigmaFetchService } from '../services/FigmaFetchService.js';
 import { ComponentFactory } from '../factories/componentFactory.js';
 import { FileUtil } from '../utils/FileUtil.js';
 import chalk from 'chalk';
+import { ExtractSvgOptions } from '../types/index.js';
+import { SvgFactory } from '../factories/svgFactory.js';
 
 export const extractSvg = async ({
-  outDir,
+  out,
+  token: _token,
   ...options
-}: Omit<FigmaFetchOptions, 'token'> & { outDir: string }) => {
-  let token = process.env.FIGMA_ACCESS_TOKEN;
+}: ExtractSvgOptions) => {
+  let token = process.env.FIGMA_ACCESS_TOKEN || _token;
   let questions: DistinctQuestion[] = [];
 
   if (!token) {
@@ -30,7 +30,7 @@ export const extractSvg = async ({
     {
       type: 'confirm',
       name: 'confirm',
-      message: `All content in ${outDir} will be deleted before writing new files. Proceed?`,
+      message: `All content in ${out} will be deleted before writing new files. Proceed?`,
     },
   ];
 
@@ -47,13 +47,17 @@ export const extractSvg = async ({
   });
 
   const svgs = await fetchService.extractSvgs();
-  const components = svgs.map(ComponentFactory.createIcon);
+  const components = svgs
+    .map(SvgFactory.applyReactAttributeNamingConvention)
+    .map(SvgFactory.removeFill)
+    .map(SvgFactory.extractSvgChildren)
+    .map(ComponentFactory.createIcon);
   const index = ComponentFactory.createIndexFile(components);
 
-  FileUtil.clearPath(outDir);
-  FileUtil.writeFile(outDir, 'index.tsx', index);
+  FileUtil.clearPath(out);
+  FileUtil.writeFile(out, 'index.tsx', index);
   components.forEach(({ name, component }) =>
-    FileUtil.writeFile(`${outDir}/icons`, `${name}.tsx`, component),
+    FileUtil.writeFile(`${out}/icons`, `${name}.tsx`, component),
   );
 
   const iconNames = components.map(({ name }) => ` - ${name}`).join('\n');

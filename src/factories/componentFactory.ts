@@ -1,11 +1,6 @@
 import { Component, SvgComponent } from '../types/index.js';
 
-const createIcon = ({
-  width,
-  height,
-  children,
-  name,
-}: SvgComponent): Component => ({
+const createIcon = ({ width, height, svg, name }: SvgComponent): Component => ({
   name,
   component: `import { IconWrapper, IconProps } from '@grace-studio/graceful-next/components';
 
@@ -13,7 +8,7 @@ const ${name} = (props: IconProps) => (
   <IconWrapper {...props} ${width ? ` width={${width}}` : ''} ${
     height ? ` height={${height}}` : ''
   }>
-    ${children}
+    ${svg}
   </IconWrapper>
 );
 

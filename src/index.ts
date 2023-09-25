@@ -3,9 +3,14 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { extractSvg } from './methods/extractSvg.js';
+import { FileUtil } from './utils/FileUtil.js';
+import { Config, ExtractSvgOptions } from './types/index.js';
 
 (() => {
   console.log(chalk.green.bold('Graceful Figma\n'));
+  const config: Config = JSON.parse(
+    FileUtil.readFile('.gracefulrc.json') || '{}',
+  );
 
   const program = new Command();
 
@@ -15,26 +20,26 @@ import { extractSvg } from './methods/extractSvg.js';
     .option('-k, --key <string>', 'project key')
     .option('-p, --page <string>', 'page name')
     .option('-s, --section <string>', 'icon section name')
-    .action(({ out, key, page, section }) => {
-      if (!out) {
+    .action((input) => {
+      const options: ExtractSvgOptions = {
+        ...config['react-icons'],
+        ...input,
+      };
+
+      if (!options.out) {
         return console.error('missing output dir');
       }
-      if (!key) {
+      if (!options.key) {
         return console.error('missing project key');
       }
-      if (!page) {
+      if (!options.page) {
         return console.error('missing page name');
       }
-      if (!section) {
+      if (!options.section) {
         return console.error('missing section name');
       }
 
-      extractSvg({
-        outDir: out,
-        iconSectionName: section,
-        pageName: page,
-        projectKey: key,
-      });
+      extractSvg({ ...options, token: config.token });
     });
 
   program.command('help', { isDefault: true }).action(() => {
