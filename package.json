@@ -18,6 +18,13 @@
     "dev": "npm run build && node ./bin/index.js react-icons",
     "prepack": "npm run build"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grace-studio/graceful-figma.git"
+  },
+  "bugs": {
+    "url": "https://github.com/grace-studio/graceful-figma/issues"
+  },
   "keywords": [],
   "author": "",
   "license": "MIT",
