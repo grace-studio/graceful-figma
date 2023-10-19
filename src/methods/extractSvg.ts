@@ -13,31 +13,28 @@ export const extractSvg = async ({
   ...options
 }: ExtractSvgOptions) => {
   let token = process.env.FIGMA_ACCESS_TOKEN || _token;
-  let questions: DistinctQuestion[] = [];
 
-  if (!token) {
-    questions = [
-      {
-        type: 'input',
-        name: 'token',
-        message: 'Enter Figma access token',
-      },
-    ];
-  }
+  const getToken: DistinctQuestion = {
+    type: 'input',
+    name: 'token',
+    message: 'Enter Figma access token',
+  };
 
-  questions = [
-    ...questions,
-    {
-      type: 'confirm',
-      name: 'confirm',
-      message: `All content in ${out} will be deleted before writing new files. Proceed?`,
-    },
+  const confirm: DistinctQuestion = {
+    type: 'confirm',
+    name: 'confirm',
+    message: `All content in ${out} will be deleted before writing new files. Proceed?`,
+  };
+
+  const questions = [
+    ...(token ? [] : [getToken]),
+    ...(options.force ? [] : [confirm]),
   ];
 
   const answers = await inquirer.prompt(questions);
   token = token || answers.token;
 
-  if (!token || !answers.confirm) {
+  if (!token || (!answers.confirm && !options.force)) {
     return;
   }
 
@@ -52,16 +49,22 @@ export const extractSvg = async ({
     .map(SvgFactory.removeFill)
     .map(SvgFactory.extractSvgChildren)
     .map(ComponentFactory.createIcon);
+
   const index = ComponentFactory.createIndexFile(components);
+  const iconByName = ComponentFactory.createIconByName();
 
   FileUtil.clearPath(out);
   FileUtil.writeFile(out, 'index.tsx', index);
-  components.forEach(({ name, component }) =>
-    FileUtil.writeFile(`${out}/icons`, `${name}.tsx`, component),
+  FileUtil.writeFile(out, 'IconByName.tsx', iconByName);
+  components.forEach(({ name, section, component }) =>
+    FileUtil.writeFile(`${out}/${section}`, `${name}.tsx`, component),
   );
 
-  const iconNames = components.map(({ name }) => ` - ${name}`).join('\n');
+  const iconNames = components
+    .map(({ fileName }) => ` - ${fileName}`)
+    .join('\n');
   console.log(chalk.green('\nSuccess!'));
   console.log(chalk.yellow('\nExtracted the following icons:'));
   console.log(chalk.yellow(iconNames));
+  console.log('');
 };

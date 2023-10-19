@@ -19,8 +19,9 @@ With cli-parameters:
 graceful-figma react-icons \
 --key <project-key> \
 --page <page-name> \
---section <section-name> \
+--section <section-name> or <section-name,other-section-name> \
 --out <./output/dir>
+--force
 ```
 
 Using config file `.gracefulrc.json`
@@ -31,8 +32,9 @@ Using config file `.gracefulrc.json`
   "react-icons": {
     "key": "project-key",
     "page": "page-name",
-    "section": "section-name",
-    "out": "./output/dir"
+    "section": "section-name", // or ["section-name", "other-section-name"] or "section-name,other-section-name"
+    "out": "./output/dir",
+    "force": true || false // optional
   }
 }
 ```

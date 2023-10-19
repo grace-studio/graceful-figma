@@ -3,26 +3,28 @@ export type SvgComponent = {
   height?: number;
   svg: string;
   name: string;
+  section: string;
+  fileName: string;
 };
 
 export type Component = {
   name: string;
+  section: string;
+  fileName: string;
   component: string;
 };
 
 export type FigmaFetchOptions = {
-  token: string;
-  section: string;
-  page: string;
   key: string;
+  page: string;
+  section: string | string[];
+  token: string;
 };
 
-export type ExtractSvgOptions = {
-  key: string;
-  page: string;
-  section: string;
+export type ExtractSvgOptions = Omit<FigmaFetchOptions, 'token'> & {
   out: string;
   token?: string;
+  force?: boolean;
 };
 
 export type Config = {

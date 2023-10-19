@@ -1,12 +1,13 @@
 import chalk from 'chalk';
 import { FigmaFetchOptions, SvgComponent } from '../types/index.js';
-import { clearAndUpper, toPascalCase } from '../utils/index.js';
+import { toPascalCase } from '../utils/index.js';
 import { sortByProperty } from '../utils/sortByProperty.js';
 
 type FigmaNode = {
   id: string;
   name: string;
   type: string;
+  section: string;
   children: FigmaNode[];
 };
 
@@ -32,6 +33,7 @@ export class FigmaFetchService {
   private __figmaFetchOptions: FigmaFetchOptions;
   private __figmaApiUrl: string = 'https://api.figma.com/v1';
   private __fetchOptions: { headers: Record<string, string> } = { headers: {} };
+  private __sections: string[];
 
   private constructor(options: FigmaFetchOptions) {
     this.__figmaFetchOptions = options;
@@ -40,6 +42,10 @@ export class FigmaFetchService {
         'X-Figma-Token': options.token,
       },
     };
+
+    this.__sections = Array.isArray(options.section)
+      ? options.section
+      : options.section.split(',');
   }
 
   static create(options: FigmaFetchOptions) {
@@ -63,10 +69,10 @@ export class FigmaFetchService {
 
   private _findIconSections = (node: FigmaNode): FigmaNode[] => {
     if (
-      node.name.toLowerCase() === this.__figmaFetchOptions.section &&
+      this.__sections.includes(node.name.toLowerCase()) &&
       node.type === 'SECTION'
     ) {
-      return [node];
+      return [{ ...node, section: node.name.toLowerCase() }];
     }
 
     if ('children' in node) {
@@ -82,7 +88,11 @@ export class FigmaFetchService {
     }
 
     if ('children' in node) {
-      return node.children.map(this._findComponents).reduce(flattenArray, []);
+      return node.children
+        .map((subNode) =>
+          this._findComponents({ ...subNode, section: node.section }),
+        )
+        .reduce(flattenArray, []);
     }
 
     return [];
@@ -114,14 +124,19 @@ export class FigmaFetchService {
     const ids = components.map(({ id }) => id);
     const { images } = await this._fetchFigmaImages(ids);
     const svgs = await Promise.all(
-      components.map(({ id, name }) =>
+      components.map(({ id, name, section }) =>
         fetch(images[id])
           .then((response) => response.text())
-          .then((data) => ({ svg: data, name: toPascalCase(name) })),
+          .then((data) => ({ svg: data, name: toPascalCase(name), section })),
       ),
     );
 
-    return svgs.sort(sortByProperty('name', 'asc'));
+    return svgs
+      .map((component) => ({
+        fileName: `${component.section}/${component.name}`,
+        ...component,
+      }))
+      .sort(sortByProperty('fileName', 'asc'));
   };
 
   public extractSvgs = async () => {

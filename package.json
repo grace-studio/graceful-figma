@@ -16,7 +16,8 @@
     "clean": "rm -rf ./lib",
     "build": "tsc",
     "dev": "npm run build && node ./bin/index.js react-icons",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",

@@ -20,6 +20,7 @@ import { Config, ExtractSvgOptions } from './types/index.js';
     .option('-k, --key <string>', 'project key')
     .option('-p, --page <string>', 'page name')
     .option('-s, --section <string>', 'icon section name')
+    .option('-f, --force [boolean]', 'icon section name')
     .action((input) => {
       const options: ExtractSvgOptions = {
         ...config['react-icons'],

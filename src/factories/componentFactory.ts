@@ -1,6 +1,12 @@
 import { Component, SvgComponent } from '../types/index.js';
 
-const createIcon = ({ width, height, svg, name }: SvgComponent): Component => ({
+const createIcon = ({
+  width,
+  height,
+  svg,
+  name,
+  ...rest
+}: SvgComponent): Component => ({
   name,
   component: `import { IconWrapper, IconProps } from '@grace-studio/graceful-next/components';
 
@@ -15,6 +21,7 @@ const ${name} = (props: IconProps) => (
 export default ${name};
 
 `,
+  ...rest,
 });
 
 const createIndexFile = (
@@ -23,7 +30,9 @@ const createIndexFile = (
 
 const Icons = {
 ${components
-  .map(({ name }) => `  ${name}: dynamic(() => import('./icons/${name}'))`)
+  .map(
+    ({ name, fileName }) => `  ${name}: dynamic(() => import('./${fileName}'))`,
+  )
   .join(',\n')}
 };
 
@@ -31,7 +40,25 @@ export default Icons;
 
 `;
 
+const createIconByName = () =>
+  `import { FC } from 'react';
+import Icons from '.';
+import { IconProps } from '@grace-studio/graceful-next/components';
+
+const IconByName: FC<IconProps & { name: keyof typeof Icons }> = ({
+  name,
+  ...props
+}) => {
+  const ImportedIcon = Icons[name];
+
+  return <ImportedIcon {...props} />;
+};
+
+export default IconByName;
+`;
+
 export const ComponentFactory = {
   createIcon,
   createIndexFile,
+  createIconByName,
 };
