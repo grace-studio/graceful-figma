@@ -64,7 +64,7 @@ const IconByName: FC<IconProps & { name: keyof typeof Icons }> = ({
   name,
   ...props
 }) => {
-  const ImportedIcon = Icons[name] as ComponentType<IconProps>;
+  const ImportedIcon = Icons[name] as unknown as ComponentType<IconProps>;
 
   return ImportedIcon ? <ImportedIcon {...props} /> : null;
 };
