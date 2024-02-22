@@ -59,7 +59,6 @@ const createIconByName = () =>
   `import { ComponentType, FC } from 'react';
 import Icons from '.';
 import { IconProps } from '@grace-studio/graceful-next/components';
-import { groupBy } from '../utils/groupBy.js';
 
 const IconByName: FC<IconProps & { name: keyof typeof Icons }> = ({
   name,
