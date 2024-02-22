@@ -1,4 +1,6 @@
 import { Component, SvgComponent } from '../types/index.js';
+import { groupBy } from '../utils/groupBy.js';
+import { toPascalCase } from '../utils/index.js';
 
 const createIcon = ({
   width,
@@ -24,14 +26,26 @@ export default ${name};
   ...rest,
 });
 
-const createIndexFile = (
-  components: Component[],
-) => `import dynamic from 'next/dynamic';
+const createIndexFile = (components: Component[]) => {
+  const sections = Object.entries(
+    groupBy(components, ({ section }) => section),
+  ).map(([section, sectionComponents]) => ({
+    section,
+    componentImports: sectionComponents
+      .map(
+        ({ name, fileName }) =>
+          `    ${name}: dynamic(() => import('./${fileName}'))`,
+      )
+      .join(',\n'),
+  }));
+
+  return `import dynamic from 'next/dynamic';
 
 const Icons = {
-${components
+${sections
   .map(
-    ({ name, fileName }) => `  ${name}: dynamic(() => import('./${fileName}'))`,
+    ({ section, componentImports }) =>
+      `  ${toPascalCase(section)}: {\n${componentImports}\n  }`,
   )
   .join(',\n')}
 };
@@ -39,19 +53,21 @@ ${components
 export default Icons;
 
 `;
+};
 
 const createIconByName = () =>
-  `import { FC } from 'react';
+  `import { ComponentType, FC } from 'react';
 import Icons from '.';
 import { IconProps } from '@grace-studio/graceful-next/components';
+import { groupBy } from '../utils/groupBy.js';
 
 const IconByName: FC<IconProps & { name: keyof typeof Icons }> = ({
   name,
   ...props
 }) => {
-  const ImportedIcon = Icons[name];
+  const ImportedIcon = Icons[name] as ComponentType<IconProps>;
 
-  return <ImportedIcon {...props} />;
+  return ImportedIcon ? <ImportedIcon {...props} /> : null;
 };
 
 export default IconByName;

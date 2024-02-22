@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import inquirer, { DistinctQuestion } from 'inquirer';
 import { FigmaFetchService } from '../services/FigmaFetchService.js';
 import { ComponentFactory } from '../factories/componentFactory.js';
@@ -6,6 +6,9 @@ import { FileUtil } from '../utils/FileUtil.js';
 import chalk from 'chalk';
 import { ExtractSvgOptions } from '../types/index.js';
 import { SvgFactory } from '../factories/svgFactory.js';
+
+dotenv.config({ path: '.env.local' });
+dotenv.config({ override: true });
 
 export const extractSvg = async ({
   out,

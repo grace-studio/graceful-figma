@@ -34,7 +34,7 @@ Using config file `.gracefulrc.json`
     "page": "page-name",
     "section": "section-name", // or ["section-name", "other-section-name"] or "section-name,other-section-name"
     "out": "./output/dir",
-    "force": true || false // optional
+    "force": true || false // optional, will show confirm dialog otherwise. Useful in pipelines.
   }
 }
 ```
