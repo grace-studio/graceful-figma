@@ -60,11 +60,28 @@ const createIconByName = () =>
 import Icons from '.';
 import { IconProps } from '@grace-studio/graceful-next/components';
 
-const IconByName: FC<IconProps & { name: keyof typeof Icons }> = ({
+type Paths<T> = T extends object
+  ? {
+      [K in keyof T]-?: K extends object
+        ? never
+        : ${'`${K & string}.${keyof T[K] & string}`'};
+    }[keyof T]
+  : '';
+
+const IconByName: FC<IconProps & { name: Paths<typeof Icons> }> = ({
   name,
   ...props
 }) => {
-  const ImportedIcon = Icons[name] as unknown as ComponentType<IconProps>;
+  const [section, icon] = name.split('.');
+  const Section = Icons[section as keyof typeof Icons];
+
+  if (!Section) {
+    return null;
+  }
+
+  const ImportedIcon = Section[
+    icon as keyof typeof Section
+  ] as unknown as ComponentType<IconProps>;
 
   return ImportedIcon ? <ImportedIcon {...props} /> : null;
 };
