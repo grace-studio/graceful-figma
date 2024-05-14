@@ -98,13 +98,28 @@ export class FigmaFetchService {
     return [];
   };
 
-  private _fetchFigmaFile = (): Promise<FigmaResponse> =>
-    fetch(
-      `${this.__figmaApiUrl}/files/${this.__figmaFetchOptions.key}`,
+  private _getPageId = async () => {
+    const { document } = await fetch(
+      `${this.__figmaApiUrl}/files/${this.__figmaFetchOptions.key}?depth=1`,
       this.__fetchOptions,
     )
       .then((response) => response.json())
       .then(validateResponse);
+    const [node] = this._findPageCanvas(document);
+
+    return node.id ?? null;
+  };
+
+  private _fetchFigmaFile = async (): Promise<FigmaResponse> => {
+    const id = await this._getPageId();
+
+    return fetch(
+      `${this.__figmaApiUrl}/files/${this.__figmaFetchOptions.key}?ids=${id}`,
+      this.__fetchOptions,
+    )
+      .then((response) => response.json())
+      .then(validateResponse);
+  };
 
   private _fetchFigmaImages = (
     ids: string[],
