@@ -41,6 +41,12 @@ export const extractSvg = async ({
     return;
   }
 
+  console.log(
+    chalk.green.dim(
+      `Extracting icons with options:\n${JSON.stringify(options, null, 1)}\n`,
+    ),
+  );
+
   const fetchService = FigmaFetchService.create({
     token,
     ...options,
@@ -66,8 +72,8 @@ export const extractSvg = async ({
   const iconNames = components
     .map(({ fileName }) => ` - ${fileName}`)
     .join('\n');
-  console.log(chalk.green('\nSuccess!'));
-  console.log(chalk.yellow('\nExtracted the following icons:'));
+  console.log(chalk.yellow.bold(`\nExtracted ${components.length} icons`));
   console.log(chalk.yellow(iconNames));
+  console.log(chalk.green.bold('\nSuccess!'));
   console.log('');
 };

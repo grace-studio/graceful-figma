@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { FigmaFetchOptions, SvgComponent } from '../types/index.js';
 import { toPascalCase } from '../utils/index.js';
 import { sortByProperty } from '../utils/sortByProperty.js';
+import { splitToChunks } from '../utils/splitToChunks.js';
 
 type FigmaNode = {
   id: string;
@@ -138,13 +139,39 @@ export class FigmaFetchService {
   ): Promise<SvgComponent[]> => {
     const ids = components.map(({ id }) => id);
     const { images } = await this._fetchFigmaImages(ids);
-    const svgs = await Promise.all(
-      components.map(({ id, name, section }) =>
-        fetch(images[id])
-          .then((response) => response.text())
-          .then((data) => ({ svg: data, name: toPascalCase(name), section })),
-      ),
-    );
+    const svgComponents = components
+      .map(({ id, name, section }) => ({
+        id,
+        name,
+        section,
+        url: images[id],
+      }))
+      .filter((comp) => {
+        if (comp.url) {
+          return true;
+        } else {
+          console.log(
+            chalk.red(
+              `Invalid SVG component found.\nName: ${comp.name}\nSection: ${comp.section}\n`,
+            ),
+          );
+          return false;
+        }
+      });
+
+    const componentChunks = splitToChunks(svgComponents, 20);
+
+    const svgs = [];
+    for await (let chunk of componentChunks) {
+      const _svgs = await Promise.all(
+        chunk.map(({ url, name, section }) =>
+          fetch(url)
+            .then((response) => response.text())
+            .then((data) => ({ svg: data, name: toPascalCase(name), section })),
+        ),
+      );
+      svgs.push(..._svgs);
+    }
 
     return svgs
       .map((component) => ({
