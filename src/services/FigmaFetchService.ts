@@ -45,8 +45,8 @@ export class FigmaFetchService {
     };
 
     this.__sections = Array.isArray(options.section)
-      ? options.section
-      : options.section.split(',');
+      ? options.section.map((s) => s.toLowerCase())
+      : options.section.split(',').map((s) => s.toLowerCase());
   }
 
   static create(options: FigmaFetchOptions) {
@@ -55,8 +55,8 @@ export class FigmaFetchService {
 
   private _findPageCanvas = (node: FigmaNode): FigmaNode[] => {
     if (
-      node.name.toLowerCase() === this.__figmaFetchOptions.page &&
-      node.type === 'CANVAS'
+      node.name.toLowerCase() === this.__figmaFetchOptions.page.toLowerCase() &&
+      node.type.toLowerCase() === 'canvas'
     ) {
       return [node];
     }
@@ -71,7 +71,7 @@ export class FigmaFetchService {
   private _findIconSections = (node: FigmaNode): FigmaNode[] => {
     if (
       this.__sections.includes(node.name.toLowerCase()) &&
-      node.type === 'SECTION'
+      node.type.toLowerCase() === 'section'
     ) {
       return [{ ...node, section: node.name.toLowerCase() }];
     }
@@ -84,7 +84,7 @@ export class FigmaFetchService {
   };
 
   private _findComponents = (node: FigmaNode): FigmaNode[] => {
-    if (node.type === 'COMPONENT') {
+    if (node.type.toLowerCase() === 'component') {
       return [node];
     }
 
@@ -108,7 +108,7 @@ export class FigmaFetchService {
       .then(validateResponse);
     const [node] = this._findPageCanvas(document);
 
-    return node.id ?? null;
+    return node?.id ?? null;
   };
 
   private _fetchFigmaFile = async (): Promise<FigmaResponse> => {
