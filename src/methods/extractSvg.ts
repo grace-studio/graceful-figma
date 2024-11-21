@@ -59,7 +59,10 @@ export const extractSvg = async ({
     .map(SvgFactory.extractSvgChildren)
     .map(ComponentFactory.createIcon);
 
-  const index = ComponentFactory.createIndexFile(components);
+  const componentName =
+    out.replace(/\/$/, '').split('/').slice(-1)[0] || 'icons';
+
+  const index = ComponentFactory.createIndexFile(components, componentName);
   const iconByName = ComponentFactory.createIconByName();
 
   FileUtil.clearPath(out);

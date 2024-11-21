@@ -26,7 +26,9 @@ export default ${name};
   ...rest,
 });
 
-const createIndexFile = (components: Component[]) => {
+const createIndexFile = (components: Component[], componentName: string) => {
+  const _componentName = toPascalCase(componentName);
+
   const sections = Object.entries(
     groupBy(components, ({ section }) => section),
   ).map(([section, sectionComponents]) => ({
@@ -41,7 +43,7 @@ const createIndexFile = (components: Component[]) => {
 
   return `import dynamic from 'next/dynamic';
 
-const Icons = {
+const ${_componentName} = {
 ${sections
   .map(
     ({ section, componentImports }) =>
@@ -50,7 +52,7 @@ ${sections
   .join(',\n')}
 };
 
-export default Icons;
+export default ${_componentName};
 
 `;
 };
