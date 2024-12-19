@@ -25,7 +25,7 @@ const applyReactAttributeNamingConvention = ({
 
 const removeFill = ({ svg, ...rest }: SvgComponent) => ({
   ...rest,
-  svg: svg.replace(/fill="#[a-fA-F0-9]{6}"/gm, ''),
+  svg: svg.replace(/fill="[#a-zA-Z0-9]{2,}"/gm, ''),
 });
 
 export const SvgFactory = {
