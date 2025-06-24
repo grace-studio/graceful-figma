@@ -1,10 +1,19 @@
-export const clearAndUpper = (text: string) =>
-  text.replace(/-|\s|_/g, '').toUpperCase();
+const capitalize = (s: string) => s.charAt(0).toUpperCase();
+
+export const dashToCamel = (attr: string) =>
+  attr.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 
 export const toPascalCase = (text: string) =>
   text
     .toLowerCase()
-    .replace(/[^a-z0-9_-\s]+/g, '')
-    .replace(/(^\w|\s\w|-\w|_\w)/g, clearAndUpper)
-    .replace(/(?<=\d+)[a-z]/g, clearAndUpper)
-    .replace(/^\d+.*/g, (text) => `_${text}`);
+    .replace(/[^a-z0-9\s_-]/g, '') // remove non-word characters
+    .replace(/(?:^|[\s_-]+)(\w)/g, (_, c) => capitalize(c)) // capitalize first letters
+    .replace(/^\d/, (d) => `_${d}`); // prepend underscore if starting with digit
+
+export const toKebabCase = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s_-]+/g, '') // remove unwanted characters
+    .replace(/[_\s]+/g, '-') // replace spaces and underscores with hyphen
+    .replace(/-+/g, '-') // collapse multiple hyphens
+    .replace(/^-+|-+$/g, ''); // trim leading/trailing hyphens

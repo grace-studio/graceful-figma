@@ -1,16 +1,21 @@
 import { SvgComponent } from '../types/index.js';
-import { clearAndUpper } from '../utils/index.js';
+import { dashToCamel } from '../utils/index.js';
 
 const extractSvgChildren = ({ svg, ...rest }: SvgComponent): SvgComponent => {
-  const svgStr = svg.replaceAll('\n', '');
-  const width = (svgStr.match(/(?<=width=")\d+(?=")/) || [])[0];
-  const height = (svgStr.match(/(?<=height=")\d+(?=")/) || [])[0];
-  const children = (svgStr.match(/(?<=<svg.*>).+(?=<\/svg>)/) || [''])[0];
+  const svgStr = svg.replace(/\s+/g, ' ').trim();
+
+  const widthMatch = svgStr.match(/width=["']([\d.]+)(px|%)?["']/);
+  const heightMatch = svgStr.match(/height=["']([\d.]+)(px|%)?["']/);
+  const childrenMatch = svgStr.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i);
+
+  const width = widthMatch ? Number(widthMatch[1]) : undefined;
+  const height = heightMatch ? Number(heightMatch[1]) : undefined;
+  const children = childrenMatch ? childrenMatch[1].trim() : '';
 
   return {
     ...rest,
-    width: width ? Number(width) : undefined,
-    height: height ? Number(height) : undefined,
+    width,
+    height,
     svg: children,
   };
 };
@@ -20,7 +25,11 @@ const applyReactAttributeNamingConvention = ({
   ...rest
 }: SvgComponent) => ({
   ...rest,
-  svg: svg.replace(/-[a-z](?=.+=")/gm, clearAndUpper),
+  svg: svg.replace(/\b([a-z][\w:-]*)(?=\s*=)/g, (match) => {
+    // Only convert attributes, skip data-*, aria-*, xlink:
+    if (/^(data|aria)-/.test(match) || match.includes(':')) return match;
+    return dashToCamel(match);
+  }),
 });
 
 const removeFill = ({ svg, ...rest }: SvgComponent) => ({
