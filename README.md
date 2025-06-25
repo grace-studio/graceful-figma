@@ -1,126 +1,228 @@
-# @grace-studio/graceful-figma
+
+# `@grace-studio/graceful-figma`
 
 [![npm version](https://badge.fury.io/js/@grace-studio%2Fgraceful-figma.svg)](https://badge.fury.io/js/@grace-studio%2Fgraceful-figma)
 
-# Graceful Figma
+## ✨ Graceful Figma
 
-A tool to generate React icons from Figma designs.
+A CLI tool for **extracting React icon components** directly from **Figma designs**, with automatic **TypeScript types** and **Next.js-compatible dynamic imports**.
 
-## Installation
+---
 
-### Global Installation
-
-For global access to the tool, install it with:
+## 📦 Installation
 
 ```bash
-npm i -g @grace-studio/graceful-figma
-# or
-yarn global add @grace-studio/graceful-figma
-```
-
-### Local Installation
-
-It can also be installed locally in a project with:
-
-```bash
-npm i -D @grace-studio/graceful-figma
+npm install -D @grace-studio/graceful-figma
 # or
 yarn add -D @grace-studio/graceful-figma
 ```
 
-### Using CLI Parameters
+---
 
-Run the following command with the appropriate parameters:
-
-```bash
-graceful-figma react-icons \
-  --key <project-key> \
-  --page <page-name> \
-  --section <section-name> or <section-name,other-section-name> \
-  --out <./output/dir> \
-  --force
-```
-
-### Using Configuration File
-
-You can also use a configuration file `.gracefulrc.json`:
-
-```json
-{
-  "token": "optional place for your access token",
-  "react-icons": {
-    "key": "project-key",
-    "page": "page-name",
-    "section": "section-name", // or ["section-name", "other-section-name"] or "section-name,other-section-name"
-    "out": "./output/dir",
-    "force": true // optional, will show confirm dialog otherwise. Useful in pipelines.
-  }
-}
-```
-
-Then run the command:
+## 🚀 Quick Start
 
 ```bash
 graceful-figma react-icons
 ```
 
-## Optional .env File
+---
 
-The access token can be placed in a `.env` file:
+## 🛠️ Configuration
+
+Add a `.gracefulrc.json` file to your project root:
+
+```json
+{
+  "token": "optional-figma-access-token",
+  "react-icons": {
+    "out": "./src/icons",
+    "force": true,
+    "sources": [
+      {
+        "alias": "GracefulIcons",
+        "fileKey": "abc123",
+        "pageName": "Icons",
+        "sectionName": ["Primary", "Secondary"]
+      },
+      {
+        "fileKey": "def456",
+        "pageName": "UI",
+        "sectionName": "Buttons"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 🔑 Figma Access Token
+
+Two options:
+
+- **Recommended (via `.env` file):**
 
 ```properties
-#.env
-FIGMA_ACCESS_TOKEN=your-secret-access-token
+FIGMA_ACCESS_TOKEN=your-secret-token
 ```
 
-## Additional Instructions
-
-### Generating Icons
-
-1. **Prepare your Figma project**: Ensure your Figma project is organized with pages and sections that you want to export as React icons.
-2. **Obtain your Figma project key**: This can be found in the URL of your Figma project.
-3. **Run the command**: Use the CLI or configuration file method to generate the icons.
-
-### Example
-
-Assuming you have a Figma project with the key `abc123`, a page named `Icons`, and sections named `Primary` and `Secondary`, you can generate the icons as follows:
-
-#### Using CLI Parameters
-
-```bash
-graceful-figma react-icons \
-  --key abc123 \
-  --page Icons \
-  --section Primary,Secondary \
-  --out ./icons \
-  --force
-```
-
-#### Using Configuration File
-
-Create a `.gracefulrc.json` file:
+- **Or inline in config:**
 
 ```json
 {
-  "token": "your-secret-access-token",
-  "react-icons": {
-    "key": "abc123",
-    "page": "Icons",
-    "section": "Primary,Secondary",
-    "out": "./icons",
-    "force": true
-  }
+  "token": "your-secret-token",
+  ...
 }
 ```
 
-Then run:
+---
+
+## ✅ What Gets Generated?
+
+After running:
 
 ```bash
 graceful-figma react-icons
 ```
 
-### Troubleshooting
+You get:
 
-- **Missing Access Token**: Ensure your access token is correctly placed in the `.env` file or provided in the configuration file.
-- **Invalid Project Key**: Double-check the project key from your Figma URL.
-- **Output Directory Issues**: Ensure the specified output directory exists or can be created by the tool.
+### 1. ✅ Pure React SVG Components (CurrentColor, Typed)
+
+Each icon becomes a **plain React functional component** exporting a `<svg>` element.
+
+**Key characteristics:**
+
+- **No external dependencies** (just React + SVG)
+- **Color inherits via `currentColor`**
+- **Typed with `SVGProps<SVGSVGElement>` for full prop control**
+
+Example generated file: `MyIcon.tsx`
+
+```tsx
+import type { SVGProps } from "react";
+
+const MyIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={32}
+    height={32}
+    fill="currentColor"
+    viewBox="0 0 32 32"
+    {...props}
+  >
+    <path d="..." />
+  </svg>
+);
+
+export default MyIcon;
+```
+
+---
+
+### 2. ✅ Tree-Structured Dynamic Import File (Next.js Compatible)
+
+An automatically generated **icons object** with **Next.js `dynamic()` imports**, mirroring your Figma structure.
+
+Example structure:
+
+```ts
+import dynamic from "next/dynamic";
+
+const Icons = {
+  Graceful: {
+    Icons: {
+      MyIcon: dynamic(() => import("./icon-pack/icons/icons/MyIcon")),
+      ...
+    },
+  },
+  Configuratoricons: {
+    Misc: {
+      AnotherIcon: dynamic(() => import("./configurator/icons/misc/AnotherIcon")),
+      ...
+    },
+  },
+};
+
+export default Icons;
+```
+
+---
+
+### 3. ✅ Type-Safe Icon Name Types (Auto-Generated)
+
+A TypeScript utility type for **type-safe icon name strings**, based on the import tree:
+
+```ts
+type IconName =
+  | "Graceful.Icons.MyIcon"
+  | "Configuratoricons.Misc.AnotherIcon"
+  | ...;
+```
+
+---
+
+### 4. ✅ Ready-to-Use `<IconByName />` Component
+
+A utility component for rendering icons **by name string**, with full **TypeScript autocomplete** and **type checking**:
+
+```tsx
+import IconByName from "./src/icons/IconByName";
+
+<IconByName name="Graceful.Icons.MyIcon" />
+```
+
+✅ Autocomplete  
+✅ Type-safe  
+✅ Optional SVG props (`width`, `className`, etc.)
+
+---
+
+## 🧪 Example Workflow
+
+1. Prepare your Figma file
+2. Configure `.gracefulrc.json`
+3. Run:
+
+```bash
+graceful-figma react-icons
+```
+
+4. Import and use anywhere in your app:
+
+```tsx
+import IconByName from "./src/icons/IconByName";
+
+export function MyButton() {
+  return <IconByName name="Configuratoricons.Misc.AnotherIcon" />;
+}
+```
+
+---
+
+## ⚠️ Troubleshooting
+
+| Issue | Solution |
+|---|---|
+| **Missing Access Token** | Set your token in `.env` or config file |
+| **Invalid file key** | Double-check your Figma URL |
+| **Empty icon output** | Verify `pageName` and `sectionName` |
+| **Next.js build errors** | Ensure you're using dynamic imports and not SSR for icons |
+
+---
+
+## ✅ Features Summary
+
+- ✅ Extracts React SVG icons from Figma
+- ✅ Outputs pure `<svg>` React components with `currentColor` fill
+- ✅ Generates TypeScript types for icon names
+- ✅ Provides a typed `<IconByName />` lookup component
+- ✅ Outputs Next.js-optimized dynamic import trees
+- ✅ Supports `.env` token management
+- ✅ Supports multiple Figma files/sections
+
+---
+
+## 📄 License
+
+MIT
