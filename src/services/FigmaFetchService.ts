@@ -1,9 +1,5 @@
 import chalk from 'chalk';
-import {
-  FigmaFetchOptions,
-  FigmaFetchSource,
-  SvgComponent,
-} from '../types/index.js';
+import { FigmaFetchSource, SvgComponent } from '../types/index.js';
 import { toKebabCase, toPascalCase } from '../utils/index.js';
 import { sortByProperty } from '../utils/sortByProperty.js';
 import { splitToChunks } from '../utils/splitToChunks.js';

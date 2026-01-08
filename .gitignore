@@ -3,5 +3,6 @@ lib
 *.tgz
 .env
 test
+dev
 .gracefulrc.json
 graceful.config.ts
