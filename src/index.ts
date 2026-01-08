@@ -2,15 +2,34 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import path from 'path';
 import { extractSvg } from './methods/extractSvg.js';
-import { FileUtil } from './utils/FileUtil.js';
-import { Config, ReactIconsConfig } from './types/index.js';
+import { GracefulConfig, ReactIconsConfig } from './types/index.js';
 
-(() => {
+(async () => {
   console.log(chalk.green.bold('Graceful Figma\n'));
-  const config: Config = JSON.parse(
-    FileUtil.readFile('.gracefulrc.json') || '{}',
-  );
+
+  let config: GracefulConfig;
+  try {
+    const configPath = path.resolve(process.cwd(), 'graceful.config.ts');
+    const configModule = await import(configPath);
+    config = configModule.default;
+    if (!config) {
+      throw new Error('No config exported from graceful.config.ts');
+    }
+  } catch (error) {
+    console.error(
+      chalk.red(
+        'Error: Could not load graceful.config.ts file from project root',
+      ),
+    );
+    console.error(
+      chalk.red(
+        'Please ensure graceful.config.ts exists in your project root and exports a valid config',
+      ),
+    );
+    process.exit(1);
+  }
 
   const program = new Command();
 

@@ -4,3 +4,4 @@ lib
 .env
 test
 .gracefulrc.json
+graceful.config.ts

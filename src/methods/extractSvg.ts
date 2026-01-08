@@ -8,6 +8,22 @@ import { SvgFactory } from '../factories/svgFactory.js';
 import { ReactIconsConfig } from '../types/index.js';
 import { toPascalCase } from '../utils/index.js';
 
+const formatComponentDetails = (item: {
+  figmaComponentName: string;
+  pageAlias: string;
+  figmaFileName: string;
+  figmaPageName: string;
+  figmaSectionName: string;
+}) => {
+  return [
+    ` - ${chalk.bold(item.figmaComponentName)}`,
+    `    From: ${item.pageAlias}`,
+    `    File: ${item.figmaFileName}`,
+    `    Page: ${item.figmaPageName}`,
+    `    Section: ${item.figmaSectionName}`,
+  ].join('\n');
+};
+
 dotenv.config({ path: '.env.local' });
 dotenv.config({ override: true });
 
@@ -50,10 +66,32 @@ export const extractSvg = async ({
 
   const fetchService = FigmaFetchService.create(token);
 
-  const svgs = await Promise.all(options.sources.map(fetchService.extractSvgs));
+  const results = await Promise.all(
+    options.sources.map(fetchService.extractSvgs),
+  );
+
+  // Extract SVGs and errors from results
+  const allSvgs = results.flatMap((result) => result.svgs);
+  const allErrors = results.flatMap((result) => result.errors);
+
+  // Filter svgs to have unique icons by filepath - only one icon in the collection with each path.
+  // Add all duplicates to a separate collection that can be printed at the end.
+  const flatSvgs = allSvgs;
+  const seenFilePaths = new Set<string>();
+  const uniqueSvgs: typeof flatSvgs = [];
+  const duplicateSvgs: typeof flatSvgs = [];
+
+  for (const svg of flatSvgs) {
+    if (seenFilePaths.has(svg.fileName)) {
+      duplicateSvgs.push(svg);
+    } else {
+      seenFilePaths.add(svg.fileName);
+      uniqueSvgs.push(svg);
+    }
+  }
+
   const components = await Promise.all(
-    svgs
-      .flat()
+    uniqueSvgs
       .map(SvgFactory.applyReactAttributeNamingConvention)
       .map(SvgFactory.removeFill)
       .map(SvgFactory.extractSvgChildren)
@@ -80,7 +118,30 @@ export const extractSvg = async ({
   const iconNames = components
     .map(({ fileName }) => ` - ${fileName}`)
     .join('\n');
-  console.log(chalk.yellow.bold(`\nExtracted ${components.length} icons`));
-  console.log(chalk.yellow(iconNames));
-  console.log(chalk.green.bold('\nSuccess!\n'));
+  console.log(chalk.cyan.bold(`\nExtracted ${components.length} icons`));
+
+  console.log(chalk.cyan(iconNames));
+
+  if (allErrors.length > 0) {
+    console.log(
+      chalk.red.bold(`\nFound ${allErrors.length} invalid SVG components:`),
+    );
+    allErrors.forEach((error) =>
+      console.log(chalk.red(formatComponentDetails(error).concat('\n'))),
+    );
+  }
+
+  if (duplicateSvgs.length > 0) {
+    console.log(
+      chalk.yellow.bold(`\nFound ${duplicateSvgs.length} duplicate icons:`),
+    );
+    duplicateSvgs.forEach((svg) =>
+      console.log(chalk.yellow(formatComponentDetails(svg).concat('\n'))),
+    );
+    console.log(
+      chalk.green('\nSuccessfully extracted icons with duplicates.\n'),
+    );
+  } else {
+    console.log(chalk.green.bold('\nSuccessfully extracted all icons!\n'));
+  }
 };

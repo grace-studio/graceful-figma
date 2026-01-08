@@ -143,10 +143,18 @@ export class FigmaFetchService {
 
   private _getSvgsFromComponents =
     (source: FigmaFetchSource, figmaFileName: string) =>
-    async (components: FigmaNode[]): Promise<SvgComponent[]> => {
+    async (
+      components: FigmaNode[],
+    ): Promise<{ svgs: SvgComponent[]; errors: any[] }> => {
+      const pageAlias = toPascalCase(
+        source.alias ??
+          `${toKebabCase(figmaFileName)} ${toKebabCase(source.pageName)}`,
+      );
+
       const ids = components.map(({ id }) => id);
       const { images } = await this._fetchFigmaImages(source)(ids);
 
+      const errors: any[] = [];
       const svgComponents = components
         .map(({ id, name, section }) => ({
           id,
@@ -158,11 +166,13 @@ export class FigmaFetchService {
           if (comp.url) {
             return true;
           } else {
-            console.log(
-              chalk.red(
-                `Invalid SVG component found.\nName: ${comp.name}\nFile: ${figmaFileName}\nPage: ${source.pageName}\nSection: ${comp.section}\n`,
-              ),
-            );
+            errors.push({
+              figmaComponentName: comp.name,
+              figmaFileName,
+              figmaPageName: source.pageName,
+              figmaSectionName: comp.section,
+              pageAlias,
+            });
             return false;
           }
         });
@@ -177,6 +187,7 @@ export class FigmaFetchService {
               .then((response) => response.text())
               .then((data) => ({
                 svg: data,
+                figmaComponentName: name,
                 name: toPascalCase(name),
                 section,
               })),
@@ -185,18 +196,20 @@ export class FigmaFetchService {
         svgs.push(..._svgs);
       }
 
-      return svgs
+      const processedSvgs: SvgComponent[] = svgs
         .map((component) => ({
           ...component,
+          figmaPageName: source.pageName,
+          figmaFileName,
+          figmaSectionName: component.section,
           section: toPascalCase(component.section),
           fileName: `${toKebabCase(figmaFileName)}/${toKebabCase(source.pageName)}/${toKebabCase(component.section)}/${component.name}`,
           filePath: `${toKebabCase(figmaFileName)}/${toKebabCase(source.pageName)}/${toKebabCase(component.section)}`,
-          pageAlias: toPascalCase(
-            source.alias ??
-              `${toKebabCase(figmaFileName)} ${toKebabCase(source.pageName)}`,
-          ),
+          pageAlias,
         }))
         .sort(sortByProperty('fileName', 'asc'));
+
+      return { svgs: processedSvgs, errors };
     };
 
   public extractSvgs = async (source: FigmaFetchSource) => {

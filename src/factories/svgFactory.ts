@@ -10,7 +10,8 @@ const extractSvgChildren = ({ svg, ...rest }: SvgComponent): SvgComponent => {
 
   const width = widthMatch ? Number(widthMatch[1]) : undefined;
   const height = heightMatch ? Number(heightMatch[1]) : undefined;
-  const children = childrenMatch ? childrenMatch[1].trim() : '';
+  let children = childrenMatch ? childrenMatch[1].trim() : '';
+  children = children.replace(/>\s+</g, '><');
 
   return {
     ...rest,
