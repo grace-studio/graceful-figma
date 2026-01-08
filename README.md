@@ -29,29 +29,33 @@ graceful-figma react-icons
 
 ## 🛠️ Configuration
 
-Add a `.gracefulrc.json` file to your project root:
+Add a `graceful.config.ts` file to your project root:
 
-```json
-{
-  "token": "optional-figma-access-token",
+```typescript
+import type { GracefulConfig } from '@grace-studio/graceful-figma';
+
+const config: GracefulConfig = {
   "react-icons": {
-    "out": "./src/icons",
-    "force": true,
-    "sources": [
+    token: "optional-figma-access-token",
+    out: "./src/icons",
+    force: true,
+    sources: [
       {
-        "alias": "GracefulIcons",
-        "fileKey": "abc123",
-        "pageName": "Icons",
-        "sectionName": ["Primary", "Secondary"]
+        alias: "GracefulIcons",
+        fileKey: "abc123",
+        pageName: "Icons",
+        sectionName: ["Primary", "Secondary"]
       },
       {
-        "fileKey": "def456",
-        "pageName": "UI",
-        "sectionName": "Buttons"
+        fileKey: "def456",
+        pageName: "UI",
+        sectionName: "Buttons"
       }
     ]
   }
-}
+};
+
+export default config;
 ```
 
 ---
@@ -68,11 +72,13 @@ FIGMA_ACCESS_TOKEN=your-secret-token
 
 - **Or inline in config:**
 
-```json
-{
-  "token": "your-secret-token",
-  ...
-}
+```typescript
+const config: GracefulConfig = {
+  "react-icons": {
+    token: "your-secret-token",
+    // ... other options
+  }
+};
 ```
 
 ---
@@ -181,7 +187,7 @@ import IconByName from "./src/icons/IconByName";
 ## 🧪 Example Workflow
 
 1. Prepare your Figma file
-2. Configure `.gracefulrc.json`
+2. Configure `graceful.config.ts`
 3. Run:
 
 ```bash
