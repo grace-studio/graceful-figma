@@ -3,25 +3,36 @@ import { groupBy } from '../utils/groupBy.js';
 import { toPascalCase } from '../utils/index.js';
 import * as prettier from 'prettier';
 
+// width = '1em';
+// height = '1em';
+// fill = 'currentColor';
+// stroke = 'currentColor';
+// strokeWidth = '0';
+
 const svgComponent = ({
   width,
   height,
   svg,
   name,
+  filePath,
+  figmaComponentName,
 }: Pick<
   SvgComponent,
-  'height' | 'width' | 'name' | 'svg'
+  'height' | 'width' | 'name' | 'svg' | 'filePath' | 'figmaComponentName'
 >) => `import type { SVGProps } from 'react';
   
-  const ${name} = (props: SVGProps<SVGSVGElement>) => (
+  const ${name} = ({
+    className = "",
+    ...props
+  }: SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="1em"
-      height="1em"
-      fill="currentColor"
-      stroke="currentColor"
-      strokeWidth="0"
+      data-icon-name="${filePath}/${figmaComponentName}"
+      width={${width}}
+      height={${height}}
+      fill="currentcolor"
       viewBox="0 0 ${width} ${height}"
+      className={className.concat(" gf-icon")}
       {...props}
     >
       ${svg}
@@ -35,18 +46,22 @@ const createIcon = async ({
   height,
   svg,
   name,
+  filePath,
+  figmaComponentName,
   ...rest
 }: SvgComponent): Promise<Component> => {
   const component = await prettier.format(
-    svgComponent({ width, height, svg, name }),
+    svgComponent({ width, height, svg, name, filePath, figmaComponentName }),
     { parser: 'typescript' },
   );
 
   return {
     name,
     component,
+    filePath,
+    figmaComponentName,
     ...rest,
-  };
+  } as Component;
 };
 
 const getSectionImports = (components: Component[]) =>
