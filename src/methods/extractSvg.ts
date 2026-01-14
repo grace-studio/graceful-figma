@@ -9,6 +9,7 @@ import { ReactIconsConfig } from '../types/index.js';
 import { toPascalCase } from '../utils/index.js';
 
 const formatComponentDetails = (item: {
+  description: string;
   figmaComponentName: string;
   pageAlias: string;
   figmaFileName: string;
@@ -16,12 +17,29 @@ const formatComponentDetails = (item: {
   figmaSectionName: string;
 }) => {
   return [
-    ` - ${chalk.bold(item.figmaComponentName)}`,
+    ` - ${chalk.bold(item.description)}`,
+    `    Component: ${item.figmaComponentName}`,
     `    From: ${item.pageAlias}`,
     `    File: ${item.figmaFileName}`,
     `    Page: ${item.figmaPageName}`,
-    `    Section: ${item.figmaSectionName}`,
+    `    Section: [${item.figmaSectionName}]`,
   ].join('\n');
+};
+
+const logComponentIssues = (
+  items: any[],
+  severity: 'error' | 'warning',
+  title: string,
+) => {
+  if (items.length === 0) return;
+
+  const colorFn = severity === 'error' ? chalk.red : chalk.yellow;
+  const severityText = severity.toUpperCase();
+
+  console.log(colorFn.bold(`\n[${severityText}] ${title} (${items.length}):`));
+  items.forEach((item) =>
+    console.log(colorFn(formatComponentDetails(item).concat('\n'))),
+  );
 };
 
 dotenv.config({ path: '.env.local' });
@@ -83,7 +101,10 @@ export const extractSvg = async ({
 
   for (const svg of flatSvgs) {
     if (seenFilePaths.has(svg.fileName)) {
-      duplicateSvgs.push(svg);
+      duplicateSvgs.push({
+        ...svg,
+        description: 'Component has duplicate filename',
+      });
     } else {
       seenFilePaths.add(svg.fileName);
       uniqueSvgs.push(svg);
@@ -122,22 +143,11 @@ export const extractSvg = async ({
 
   console.log(chalk.cyan(iconNames));
 
-  if (allErrors.length > 0) {
-    console.log(
-      chalk.red.bold(`\nFound ${allErrors.length} invalid SVG components:`),
-    );
-    allErrors.forEach((error) =>
-      console.log(chalk.red(formatComponentDetails(error).concat('\n'))),
-    );
-  }
+  logComponentIssues(allErrors, 'error', 'Component processing failures');
+
+  logComponentIssues(duplicateSvgs, 'warning', 'Duplicate icon filenames');
 
   if (duplicateSvgs.length > 0) {
-    console.log(
-      chalk.yellow.bold(`\nFound ${duplicateSvgs.length} duplicate icons:`),
-    );
-    duplicateSvgs.forEach((svg) =>
-      console.log(chalk.yellow(formatComponentDetails(svg).concat('\n'))),
-    );
     console.log(
       chalk.green('\nSuccessfully extracted icons with duplicates.\n'),
     );

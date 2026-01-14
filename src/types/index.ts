@@ -3,6 +3,7 @@ export type SvgComponent = {
   height?: number;
   svg: string;
   name: string;
+  description?: string;
   figmaComponentName: string;
   figmaPageName: string;
   figmaFileName: string;

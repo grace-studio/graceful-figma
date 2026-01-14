@@ -163,6 +163,7 @@ export class FigmaFetchService {
             return true;
           } else {
             errors.push({
+              description: 'Failed to fetch component image URL',
               figmaComponentName: comp.name,
               figmaFileName,
               figmaPageName: source.pageName,
@@ -214,6 +215,25 @@ export class FigmaFetchService {
     const components = this._findPageCanvas(source)(document)
       .flatMap(this._findIconSections(source))
       .flatMap(this._findComponents);
+
+    if (components.length < 1) {
+      return {
+        svgs: [],
+        errors: [
+          {
+            description: 'Figma source(s) without valid components',
+            figmaComponentName: 'N/A',
+            figmaFileName,
+            figmaPageName: source.pageName,
+            figmaSectionName: [source.sectionName].flat().join(', '),
+            pageAlias: toPascalCase(
+              source.alias ??
+                `${toKebabCase(figmaFileName)} ${toKebabCase(source.pageName)}`,
+            ),
+          },
+        ],
+      };
+    }
 
     return this._getSvgsFromComponents(source, figmaFileName)(components);
   };
