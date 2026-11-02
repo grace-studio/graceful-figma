@@ -1,6 +1,6 @@
 {
   "name": "@grace-studio/graceful-figma",
-  "version": "3.0.0-beta.5",
+  "version": "4.0.0-beta.1",
   "description": "CLI that pulls SVGs from Figma into .svg files and React components",
   "type": "module",
   "main": "./lib/index.js",
