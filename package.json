@@ -1,15 +1,14 @@
 {
   "name": "@grace-studio/graceful-figma",
   "version": "3.0.0-beta.5",
-  "description": "",
+  "description": "CLI that pulls SVGs from Figma into .svg files and React components",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
-      "import": "./lib/index.js",
-      "require": "./lib/index.js"
+      "default": "./lib/index.js"
     }
   },
   "bin": {
@@ -20,11 +19,13 @@
     "lib/**/*"
   ],
   "scripts": {
-    "lint": "eslint",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "clean": "rm -rf ./lib",
-    "build": "npm run clean && tsc",
-    "dev": "npm run build && node ./bin/index.js react-icons",
-    "prepack": "npm run build",
+    "build": "yarn clean && tsc -p tsconfig.build.json",
+    "dev": "yarn build && node ./bin/index.js react-svgs",
+    "prepack": "yarn build",
     "postversion": "git push && git push --tags"
   },
   "repository": {
@@ -34,32 +35,32 @@
   "bugs": {
     "url": "https://github.com/grace-studio/graceful-figma/issues"
   },
-  "keywords": [],
+  "keywords": [
+    "figma",
+    "icons",
+    "svg",
+    "react",
+    "nextjs",
+    "cli"
+  ],
   "author": "",
   "license": "MIT",
-  "peerDependencies": {
-    "typescript": ">=5.0.0"
-  },
   "dependencies": {
-    "chalk": "^5",
-    "commander": "14.0.0",
-    "dotenv": "16.5.0",
-    "inquirer": "12.6.3",
-    "prettier": "3.6.0"
+    "chalk": "6.0.1",
+    "commander": "15.0.0",
+    "inquirer": "14.2.5",
+    "prettier": "3.9.10"
   },
   "devDependencies": {
-    "@types/inquirer": "9.0.8",
-    "@types/node": "24.0.3",
-    "@types/react": "19.1.8",
-    "eslint": "9.29.0",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-prettier": "5.5.0",
-    "next": "15.3.4",
-    "prettier-eslint": "16.4.2",
-    "typescript": "5.8.3"
+    "@types/node": "22.20.5",
+    "eslint": "10.14.0",
+    "eslint-config-prettier": "10.1.8",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.18"
   }
 }

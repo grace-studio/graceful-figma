@@ -4,5 +4,5 @@ lib
 .env
 test
 dev
-.gracefulrc.json
 graceful.config.ts
+.env.local

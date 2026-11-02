@@ -40,19 +40,22 @@ export type FigmaFetchSource = {
    * Name(s) of section(s) within the page to extract components from
    */
   sectionName: string | string[];
-};
-
-export type FigmaFetchOptions = FigmaFetchSource & {
-  token: string;
-};
-
-export type ReactIconsConfig = {
   /**
-   * Array of Figma sources to extract icons from
+   * Replaces fill and stroke colors with `currentColor`, so the svgs take the CSS `color`.
+   * `none` and gradient references are kept.
+   * @default true
+   */
+  shouldUseCurrentColor?: boolean;
+};
+
+/** Config of the `svgs` and `react-svgs` commands. */
+export type SvgsConfig = {
+  /**
+   * Array of Figma sources to extract svgs from
    */
   sources: FigmaFetchSource[];
   /**
-   * Output directory path where generated icon components will be saved
+   * Output dir, cleared before writing. Must be inside the project root.
    */
   out: string;
   /**
@@ -65,6 +68,23 @@ export type ReactIconsConfig = {
   force?: boolean;
 };
 
+/** Content of `graceful.config.ts`, one key per command. */
 export type GracefulConfig = {
-  'react-icons'?: Partial<ReactIconsConfig>;
+  /** Config of the `svgs` command, writing `.svg` files */
+  svgs?: Partial<SvgsConfig>;
+  /** Config of the `react-svgs` command, writing React components */
+  'react-svgs'?: Partial<SvgsConfig>;
+};
+
+/** A component that failed processing or was skipped, reported to the user after extraction. */
+export type ComponentIssue = Pick<
+  SvgComponent,
+  | 'figmaComponentName'
+  | 'figmaFileName'
+  | 'figmaPageName'
+  | 'figmaSectionName'
+  | 'pageAlias'
+> & {
+  /** Human readable reason for the issue */
+  description: string;
 };
